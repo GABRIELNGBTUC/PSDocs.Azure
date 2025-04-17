@@ -229,6 +229,29 @@ function global:GetTemplateOutput {
     }
 }
 
+# A function to import user-defined types
+function global:GetTemplateDefinition {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
+        [PSObject]$InputObject
+    )
+    process {
+        foreach ($property in $InputObject.definitions.PSObject.Properties) {
+            Write-Warning "$(ConvertTo-Json $property)"
+            $definition = [PSCustomObject]@{
+                Name = $property.Name
+                Properties = $property.PSObject.Properties
+                Description = ''
+            }
+            if ([bool]$property.Value.PSObject.Properties['metadata'] -and [bool]$property.Value.metadata.PSObject.Properties['description']) {
+                $output.Description = $property.Value.metadata.description
+            }
+            $definition;
+        }
+    }
+}
+
 # Synopsis: A definition to generate markdown for an ARM template
 Document 'README' -With 'Azure.TemplateSchema' {
 
@@ -250,6 +273,9 @@ Document 'README' -With 'Azure.TemplateSchema' {
     $parameters = $template | GetTemplateParameter;
     $metadata = $template | GetTemplateMetadata -Path $templatePath;
     $outputs = $template | GetTemplateOutput;
+    $definitions = $template | GetTemplateDefinition;
+
+    Write-Warning "Post binding: $(ConvertTo-Json $definitions)"
 
     # Set document title
     if ($Null -ne $metadata -and $metadata.ContainsKey('name')) {
@@ -296,6 +322,19 @@ Document 'README' -With 'Azure.TemplateSchema' {
         # Add details
         if ($Null -ne $metadata -and $metadata.ContainsKey('details')) {
             $metadata.details
+        }
+    }
+    Write-Warning "Definitions will be built. Localized data is $(ConvertTo-Json $LocalizedData)"
+    Section $LocalizedData.Definitions {
+        foreach($definition in $definitions) {
+            Write-Warning "Definition $(ConvertTo-Json $definition)"
+            Section $definition.Name {
+                Write-Warning "Definition Properties $(ConvertTo-Json $definition.Properties.Value)"
+                $definition.Properties.Value | Table -Property @{ Name = 'Property name'; Expression = { $_.Name}},
+                @{ Name = 'Property type'; Expression = {
+                    If($null -eq $_.Value.'$ref') { $_.Value.Type } Else { $_.Value.'$ref' }
+                }}
+            }
         }
     }
 
