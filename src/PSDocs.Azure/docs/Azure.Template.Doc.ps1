@@ -261,6 +261,7 @@ function global:GetTemplateDefinition {
     }
 }
 
+#A function to create a link to a definition defined in the template
 function global:GetDefinitionReferenceMarkdownLink {
     [CmdletBinding()]
     param (
@@ -269,6 +270,30 @@ function global:GetDefinitionReferenceMarkdownLink {
     )
     process {
         return "[$($DefinitionPath)](#$($DefinitionPath.Split('/')[-1].ToLower().Replace(' ', '-')))"
+    }
+}
+
+# A function to import functions
+function global:GetTemplateFunction {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
+        [PSObject]$InputObject
+    )
+    process {
+        foreach ($property in $InputObject.functions.members.PSObject.Properties) {
+            $function = [PSCustomObject]@{
+                Name = $property.Name
+                Parameters = $property.value.Parameters
+                Output = $property.Value.Output
+                Description = ''
+            }
+            if ([bool]$property.Value.PSObject.Properties['metadata'] -and [bool]$property.Value.metadata.PSObject.Properties['description']) {
+                $function.Description = $property.Value.metadata.description
+                
+            }
+            $function;
+        }
     }
 }
 
@@ -294,7 +319,7 @@ Document 'README' -With 'Azure.TemplateSchema' {
     $metadata = $template | GetTemplateMetadata -Path $templatePath;
     $outputs = $template | GetTemplateOutput;
     $definitions = $template | GetTemplateDefinition;
-
+    $functions = $template | GetTemplateFunction;
 
     # Set document title
     if ($Null -ne $metadata -and $metadata.ContainsKey('name')) {
@@ -383,6 +408,24 @@ Document 'README' -With 'Azure.TemplateSchema' {
                     }
                 }
             }   
+        }
+    }
+
+    Section "Functions" {
+        foreach($function in $functions) {
+            Section $function.Name {
+                $function.Description;
+
+                if($null -ne $function.Parameters -and $function.Parameters.Count -gt 0) {
+                    $function.Parameters | Table -Property @{ Name = $LocalizedData.ParameterName; Expression = { $_.Name }},
+                    @{ Name = $LocalizedData.Type; Expression = { If($null -eq $_.'$ref') { $_.Type } Else { GetDefinitionReferenceMarkdownLink $_.'$ref' }}}
+                }
+                if($null -ne $function.Output) {
+                    "**output**"
+                    $("Type: $(If($null -eq $function.Output.'$ref') { $function.Output.Type } Else { GetDefinitionReferenceMarkdownLink $function.Output.'$ref' })")
+                    $function.Output.Value | Code 'text'
+                }
+            }
         }
     }
 
