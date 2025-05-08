@@ -46,6 +46,32 @@ function global:GetTemplateParameter {
     }
 }
 
+#Get the template content whether it is a JSON or Bicep file
+function global:GetTemplateContent {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $True)]
+        [String]$Path
+    )
+    process {
+        $template = Get-Content -Path $Path -Raw;
+        if($Path.EndsWith('.bicep') -eq '.json') {
+            $template = $template | ConvertFrom-Json -Depth 100
+        }
+        else {
+            if($PSVersionTable.PSEdition -ne 'Core')
+            {
+                throw "Building Bicep files with PowerShell is not supported in Powershell for Windows. Please use the Core edition.";
+            }
+            if (-not (Get-Module -Name Bicep -ListAvailable)) {
+                throw "Bicep module is not installed. Please install the Bicep module from the PowerShell Gallery using 'Install-Module Bicep -AllowPreRelease -Scope CurrentUser'.";
+            }
+            Import-Module Bicep
+            $template = (Build-Bicep -Path $Path -AsString -ErrorAction Stop) | ConvertFrom-Json -Depth 100
+        }
+    }
+}
+
 # A function to create an example JSON parameter file snippet.
 function global:GetTemplateExample {
     [CmdletBinding()]
@@ -57,7 +83,7 @@ function global:GetTemplateExample {
         if (![System.IO.Path]::IsPathRooted($Path)) {
             $Path = Join-Path -Path $PWD -ChildPath $Path;
         }
-        $template = Get-Content -Path $Path -Raw | ConvertFrom-Json;
+        $template = GetTemplateContent -Path $Path;
         # $normalPath = GetTemplateRelativePath -Path $Path;
         $normalPath = $PSDocs.Source.Path;
         $baseContent = [PSCustomObject]@{
@@ -218,13 +244,13 @@ function global:GetTemplateOutput {
         foreach ($property in $InputObject.outputs.PSObject.Properties) {
             $output = [PSCustomObject]@{
                 Name = $property.Name
-                Type = If ($null -eq $property.Value.'$ref') {$property.Value.type} Else {GetDefinitionReferenceMarkdownLink $property.Value.'$ref'} 
+                Type = If ($null -eq $property.Value.'$ref') {$property.Value.type} Else {GetDefinitionReferenceMarkdownLink $property.Value.'$ref'}
                 Description = ''
             }
             if ([bool]$property.Value.PSObject.Properties['metadata'] -and [bool]$property.Value.metadata.PSObject.Properties['description']) {
-                
+
                 $output.Description = $property.Value.metadata.description
-                
+
             }
             $output;
         }
@@ -290,12 +316,14 @@ function global:GetTemplateFunction {
             }
             if ([bool]$property.Value.PSObject.Properties['metadata'] -and [bool]$property.Value.metadata.PSObject.Properties['description']) {
                 $function.Description = $property.Value.metadata.description
-                
+
             }
             $function;
         }
     }
 }
+
+
 
 # Synopsis: A definition to generate markdown for an ARM template
 Document 'README' -With 'Azure.TemplateSchema' {
@@ -303,8 +331,9 @@ Document 'README' -With 'Azure.TemplateSchema' {
     $templatePath = $PSDocs.Source.FullName;
     $template = $PSDocs.TargetObject;
     if ($PSDocs.TargetObject -is [String]) {
-        $templatePath = (Get-Item -Path $PSDocs.TargetObject).FullName;
-        $template = Get-Content -Path $templatePath -Raw | ConvertFrom-Json;
+        $templatePath = $templateInfo.FullName;
+        
+        $template = GetTemplateContent -Path $templatePath;
         $relativePath = (Split-Path (GetTemplateRelativePath -Path $templatePath) -Parent).Replace('\', '/').TrimStart('/');
     }
     else {
@@ -373,7 +402,7 @@ Document 'README' -With 'Azure.TemplateSchema' {
             Section $definition.Name {
 
                 $definition.Description;
-                
+
                 $definitionProperties = $definition.Properties.Value.Properties;
                 if($null -ne $definitionProperties -and $definitionProperties.Count -gt 0) {
                     $definitionProperties.PSObject.Properties | Table -Property @{ Name = $LocalizedData.PropertyName; Expression = { $_.Name }},
@@ -382,7 +411,7 @@ Document 'README' -With 'Azure.TemplateSchema' {
                     }},
                     @{ Name = $LocalizedData.Nullable; Expression = { If($null -ne $_.Value.nullable) { $_.Value.nullable } Else { 'False' }}},
                     @{ Name = $LocalizedData.Description; Expression = { If($null -ne $_.Value.Metadata.Description) { $_.Value.Metadata.Description } Else { '' }}},
-                    @{ Name= $LocalizedData.AllowedValues; Expression = { 
+                    @{ Name= $LocalizedData.AllowedValues; Expression = {
                         If($null -eq $_.Value.allowedValues) { 'Any' } Else {
                             $_.Value.allowedValues -join ' &#124; ' # &#124; = Pipe symbol = |
                         }
@@ -398,16 +427,16 @@ Document 'README' -With 'Azure.TemplateSchema' {
                     Section $LocalizedData.UnionTypes {
                         "**$($LocalizedData.DiscriminatorDescription)**"
                         $definition.Discriminator.propertyName | Code 'text'
-                        
+
                         if($null -ne $definition.Discriminator.mapping) {
                             "**$($LocalizedData.Mapping)**"
                             $definition.Discriminator.mapping.PSObject.Properties | Table -Property @{ Name = $LocalizedData.Type; Expression = { $_.Name }},
                             @{ Name = $LocalizedData.Definition; Expression = { GetDefinitionReferenceMarkdownLink $_.Value.'$ref' }}
                         }
-                    
+
                     }
                 }
-            }   
+            }
         }
     }
 
@@ -433,13 +462,13 @@ Document 'README' -With 'Azure.TemplateSchema' {
     Section $LocalizedData.Parameters {
         $parameters | Table -Property @{ Name = $LocalizedData.ParameterName; Expression = { $_.Name }},
         @{ Name = $LocalizedData.Required; Expression = {
-                if($_.Required) {
-                    $LocalizedData.RequiredNo
-                }
-                else {
-                    $LocalizedData.RequiredYes
-                }
+            if($_.Required) {
+                $LocalizedData.RequiredNo
             }
+            else {
+                $LocalizedData.RequiredYes
+            }
+        }
         },
         @{ Name = $LocalizedData.Description; Expression = { $_.Description }}
 
@@ -493,8 +522,8 @@ Document 'README' -With 'Azure.TemplateSchema' {
     # Add table for outputs
     Section $LocalizedData.Outputs {
         $outputs | Table -Property @{ Name = $LocalizedData.Name; Expression = { $_.Name }},
-            @{ Name = $LocalizedData.Type; Expression = { $_.Type }},
-            @{ Name = $LocalizedData.Description; Expression = { $_.Description }}
+        @{ Name = $LocalizedData.Type; Expression = { $_.Type }},
+        @{ Name = $LocalizedData.Description; Expression = { $_.Description }}
     }
 
     # Insert snippets
@@ -520,3 +549,4 @@ Document 'README' -With 'Azure.TemplateSchema' {
         }
     }
 }
+
