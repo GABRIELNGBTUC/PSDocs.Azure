@@ -69,6 +69,7 @@ function global:GetTemplateContent {
             Import-Module Bicep
             $template = (Build-Bicep -Path $Path -AsString -ErrorAction Stop) | ConvertFrom-Json -Depth 100
         }
+        return $template;
     }
 }
 
