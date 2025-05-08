@@ -55,7 +55,7 @@ function global:GetTemplateContent {
     )
     process {
         $template = Get-Content -Path $Path -Raw;
-        if($Path.EndsWith('.bicep') -eq '.json') {
+        if(-not ($Path.EndsWith('.bicep'))) {
             $template = $template | ConvertFrom-Json -Depth 100
         }
         else {
@@ -331,8 +331,7 @@ Document 'README' -With 'Azure.TemplateSchema' {
     $templatePath = $PSDocs.Source.FullName;
     $template = $PSDocs.TargetObject;
     if ($PSDocs.TargetObject -is [String]) {
-        $templatePath = $templateInfo.FullName;
-        
+        $templatePath = (Get-Item -Path $PSDocs.TargetObject).FullName;
         $template = GetTemplateContent -Path $templatePath;
         $relativePath = (Split-Path (GetTemplateRelativePath -Path $templatePath) -Parent).Replace('\', '/').TrimStart('/');
     }
