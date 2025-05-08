@@ -56,7 +56,7 @@ function global:GetTemplateContent {
     process {
         $template = Get-Content -Path $Path -Raw;
         if(-not ($Path.EndsWith('.bicep'))) {
-            $template = $template | ConvertFrom-Json -Depth 100
+            $template = $template | ConvertFrom-Json
         }
         else {
             if($PSVersionTable.PSEdition -ne 'Core')
