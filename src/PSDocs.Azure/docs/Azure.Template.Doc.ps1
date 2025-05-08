@@ -17,6 +17,7 @@ function global:GetTemplateParameter {
             $result = @{
                 Name = $property.Name
                 Description = ''
+                Type = If ($null -eq $property.Value.items.'$ref') {$property.Value.type} Else {GetDefinitionReferenceMarkdownLink $property.Value.items.'$ref'}
             }
             if ([bool]$property.Value.PSObject.Properties['metadata'] -and [bool]$property.Value.metadata.PSObject.Properties['description']) {
                 $result.Description = $property.Value.metadata.description;
@@ -473,6 +474,7 @@ Document 'README' -With 'Azure.TemplateSchema' {
             }
         }
         },
+        @{ Name = $LocalizedData.Type; Expression = { $_.Type }},
         @{ Name = $LocalizedData.Description; Expression = { $_.Description }}
 
         foreach ($parameter in $parameters) {
