@@ -41,6 +41,9 @@ function global:GetTemplateParameter {
             if ([bool]$property.Value.PSObject.Properties['maxLength']) {
                 $result['maxLength'] = $property.Value.maxLength;
             }
+            if ([bool]$property.Value.PSObject.Properties['nullable']) {
+                $result['nullable'] = $property.Value.nullable;
+            }
             [PSCustomObject]$result;
         }
     }
@@ -462,7 +465,7 @@ Document 'README' -With 'Azure.TemplateSchema' {
     Section $LocalizedData.Parameters {
         $parameters | Table -Property @{ Name = $LocalizedData.ParameterName; Expression = { $_.Name }},
         @{ Name = $LocalizedData.Required; Expression = {
-            if($_.Required) {
+            if($_.Required -or $_.Nullable -eq $true) {
                 $LocalizedData.RequiredNo
             }
             else {
