@@ -2,28 +2,26 @@
 
 Create or update a Storage Account.
 
-![Template checks](https://img.shields.io/badge/Template-Pass-green?style=flat-square)
-
 This template deploys a Storage Account including blob containers and files shares. Encryption in transit it enabled using a minimum of TLS 1.2.
 
 ## Parameters
 
-Parameter name | Required | Description
--------------- | -------- | -----------
-storageAccountName | Yes      | The name of the Storage Account.
-location       | No       | The Azure region to deploy to.
-sku            | No       | Create the Storage Account as LRS or GRS.
-suffixLength   | No       | Determine how many additional characters are added to the storage account name as a suffix.
-containers     | No       | An array of storage containers to create on the storage account.
-lifecycleRules | No       | An array of lifecycle management policies for the storage account.
-blobSoftDeleteDays | No       | The number of days to retain deleted blobs. When set to 0, soft delete is disabled.
-containerSoftDeleteDays | No       | The number of days to retain deleted containers. When set to 0, soft delete is disabled.
-shares         | No       | An array of file shares to create on the storage account.
-useLargeFileShares | No       | Determines if large file shares are enabled. This can not be disabled once enabled.
-shareSoftDeleteDays | No       | The number of days to retain deleted shares. When set to 0, soft delete is disabled.
-allowBlobPublicAccess | No       | Determines if any containers can be configured with the anonymous access types of blob or container.
-keyVaultPrincipalId | No       | Set to the objectId of Azure Key Vault to delegated permission for use with Key Managed Storage Accounts.
-tags           | Yes      | Tags to apply to the resource.
+Parameter name | Required | Type | Description
+-------------- | -------- | ---- | -----------
+storageAccountName | Yes      | string | The name of the Storage Account.
+location       | No       | string | The Azure region to deploy to.
+sku            | No       | string | Create the Storage Account as LRS or GRS.
+suffixLength   | No       | int  | Determine how many additional characters are added to the storage account name as a suffix.
+containers     | No       | array | An array of storage containers to create on the storage account.
+lifecycleRules | No       | array | An array of lifecycle management policies for the storage account.
+blobSoftDeleteDays | No       | int  | The number of days to retain deleted blobs. When set to 0, soft delete is disabled.
+containerSoftDeleteDays | No       | int  | The number of days to retain deleted containers. When set to 0, soft delete is disabled.
+shares         | No       | array | An array of file shares to create on the storage account.
+useLargeFileShares | No       | bool | Determines if large file shares are enabled. This can not be disabled once enabled.
+shareSoftDeleteDays | No       | int  | The number of days to retain deleted shares. When set to 0, soft delete is disabled.
+allowBlobPublicAccess | No       | bool | Determines if any containers can be configured with the anonymous access types of blob or container.
+keyVaultPrincipalId | No       | string | Set to the objectId of Azure Key Vault to delegated permission for use with Key Managed Storage Accounts.
+tags           | Yes      | object | Tags to apply to the resource.
 
 ### storageAccountName
 
@@ -228,7 +226,7 @@ resourceId | string | A unique resource identifier for the Storage Account.
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "metadata": {
-        "template": "templates/storage/v1/template.json"
+        "template": null
     },
     "parameters": {
         "storageAccountName": {

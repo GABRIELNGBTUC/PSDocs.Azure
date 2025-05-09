@@ -1,17 +1,15 @@
 # Container Registry
 
-![Template checks](https://img.shields.io/badge/Template-Pass-green?style=flat-square)
-
 Create or update a Container Registry.
 
 ## Parameters
 
-Parameter name | Required | Description
--------------- | -------- | -----------
-registryName   | Yes      | The name of the container registry.
-location       | No       | The location to deploy the container registry.
-registrySku    | No       | The container registry SKU.
-tags           | Yes      | Tags to apply to the resource.
+Parameter name | Required | Type | Description
+-------------- | -------- | ---- | -----------
+registryName   | Yes      | string | The name of the container registry.
+location       | No       | string | The location to deploy the container registry.
+registrySku    | No       | string | The container registry SKU.
+tags           | Yes      | object | Tags to apply to the resource.
 
 ### registryName
 
@@ -66,7 +64,7 @@ Tags to apply to the resource.
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "metadata": {
-        "template": "templates/acr/v1/template.json"
+        "template": null
     },
     "parameters": {
         "registryName": {

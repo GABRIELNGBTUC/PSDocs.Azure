@@ -1,24 +1,22 @@
 # Key Vault
 
-![Template checks](https://img.shields.io/badge/Template-Pass-green?style=flat-square)
-
 Create or update a Key Vault.
 
 ## Parameters
 
-Parameter name | Required | Description
--------------- | -------- | -----------
-vaultName      | Yes      | The name of the Key Vault.
-location       | No       | The Azure region to deploy to.
-accessPolicies | No       | The access policies defined for this vault.
-useDeployment  | No       | Determines if Azure can deploy certificates from this Key Vault.
-useTemplate    | No       | Determines if templates can reference secrets from this Key Vault.
-useDiskEncryption | No       | Determines if this Key Vault can be used for Azure Disk Encryption.
-useSoftDelete  | No       | Determine if soft delete is enabled on this Key Vault.
-usePurgeProtection | No       | Determine if purge protection is enabled on this Key Vault.
-networkAcls    | No       | The network firewall defined for this vault.
-workspaceId    | No       | The workspace to store audit logs.
-tags           | Yes      | Tags to apply to the resource.
+Parameter name | Required | Type | Description
+-------------- | -------- | ---- | -----------
+vaultName      | Yes      | string | The name of the Key Vault.
+location       | No       | string | The Azure region to deploy to.
+accessPolicies | No       | array | The access policies defined for this vault.
+useDeployment  | No       | bool | Determines if Azure can deploy certificates from this Key Vault.
+useTemplate    | No       | bool | Determines if templates can reference secrets from this Key Vault.
+useDiskEncryption | No       | bool | Determines if this Key Vault can be used for Azure Disk Encryption.
+useSoftDelete  | No       | bool | Determine if soft delete is enabled on this Key Vault.
+usePurgeProtection | No       | bool | Determine if purge protection is enabled on this Key Vault.
+networkAcls    | No       | object | The network firewall defined for this vault.
+workspaceId    | No       | string | The workspace to store audit logs.
+tags           | Yes      | object | Tags to apply to the resource.
 
 ### vaultName
 
@@ -148,7 +146,7 @@ resourceId | string | A unique resource identifier for the Key Vault.
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "metadata": {
-        "template": "templates/keyvault/v1/template.json"
+        "template": null
     },
     "parameters": {
         "vaultName": {
