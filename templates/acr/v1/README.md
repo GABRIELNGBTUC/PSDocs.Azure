@@ -1,5 +1,7 @@
 # Container Registry
 
+![Template checks](https://img.shields.io/badge/Template-Pass-green?style=flat-square)
+
 Create or update a Container Registry.
 
 ## Parameters
@@ -64,7 +66,7 @@ Tags to apply to the resource.
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "metadata": {
-        "template": null
+        "template": "templates/acr/v1/template.json"
     },
     "parameters": {
         "registryName": {

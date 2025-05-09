@@ -2,16 +2,12 @@
 
 Create or update a Storage Account.
 
-![Template checks](https://img.shields.io/badge/Template-Pass-green?style=flat-square)
-
-This template deploys a Storage Account including blob containers and files shares. Encryption in transit it enabled using a minimum of TLS 1.2.
-
 ## Parameters
 
-Parameter name | Required | Description
--------------- | -------- | -----------
-name           | Yes      | The name of the storage account.
-location       | No       | The location of the storage account.
+Parameter name | Required | Type | Description
+-------------- | -------- | ---- | -----------
+name           | Yes      | string | The name of the storage account.
+location       | No       | string | The location of the storage account.
 
 ### name
 
@@ -40,7 +36,7 @@ The location of the storage account.
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "metadata": {
-        "template": "examples/bicep/storage/v1/main.json"
+        "template": null
     },
     "parameters": {
         "name": {

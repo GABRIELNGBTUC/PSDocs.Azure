@@ -2,6 +2,8 @@
 
 Create or update a Storage Account.
 
+![Template checks](https://img.shields.io/badge/Template-Pass-green?style=flat-square)
+
 This template deploys a Storage Account including blob containers and files shares. Encryption in transit it enabled using a minimum of TLS 1.2.
 
 ## Parameters
@@ -226,7 +228,7 @@ resourceId | string | A unique resource identifier for the Storage Account.
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "metadata": {
-        "template": null
+        "template": "templates/storage/v1/template.json"
     },
     "parameters": {
         "storageAccountName": {
