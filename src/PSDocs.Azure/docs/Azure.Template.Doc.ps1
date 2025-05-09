@@ -5,6 +5,36 @@
 # Azure Resource Manager documentation definitions
 #
 
+function global:GetTemplateParameterType {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $True)]
+        [PSObject]$Parameter
+    )
+    process {
+        if($null -ne $Parameter.type)
+        {
+            if($null -ne $Parameter.items)
+            {
+                if($null -ne $Parameter.items.'$ref')
+                {
+                    return "$($Parameter.type) of  $(GetDefinitionReferenceMarkdownLink $Parameter.items.'$ref')"
+                }
+                else
+                {
+                    return "$($Parameter.type) of $($Parameter.items.type)"
+                }
+            }
+            return $Parameter.type
+        }
+        if($null -ne $Parameter.items)
+        {
+            return GetDefinitionReferenceMarkdownLink $Parameter.items.'$ref'
+        }
+        return GetDefinitionReferenceMarkdownLink $Parameter.'$ref'
+    }
+}
+
 # A function to break out parameters from an ARM template.
 function global:GetTemplateParameter {
     [CmdletBinding()]
@@ -17,7 +47,7 @@ function global:GetTemplateParameter {
             $result = @{
                 Name = $property.Name
                 Description = ''
-                Type = If ($null -eq $property.Value.items) {If($null -eq $property.Value.'$ref') {$property.Value.type} Else {GetDefinitionReferenceMarkdownLink $property.Value.'$ref'}} Else {GetDefinitionReferenceMarkdownLink $property.Value.items.'$ref'}
+                Type = GetTemplateParameterType -Parameter $property.Value
             }
             if ([bool]$property.Value.PSObject.Properties['metadata'] -and [bool]$property.Value.metadata.PSObject.Properties['description']) {
                 $result.Description = $property.Value.metadata.description;
