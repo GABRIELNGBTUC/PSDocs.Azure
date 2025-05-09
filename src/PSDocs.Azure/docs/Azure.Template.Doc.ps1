@@ -17,7 +17,7 @@ function global:GetTemplateParameter {
             $result = @{
                 Name = $property.Name
                 Description = ''
-                Type = If ($null -eq $property.Value.items.'$ref') {$property.Value.type} Else {GetDefinitionReferenceMarkdownLink $property.Value.items.'$ref'}
+                Type = If ($null -eq $property.Value.items) {If($null -eq $property.Value.'$ref') {$property.Value.type} Else {GetDefinitionReferenceMarkdownLink $property.Value.'$ref'}} Else {GetDefinitionReferenceMarkdownLink $property.Value.items.'$ref'}
             }
             if ([bool]$property.Value.PSObject.Properties['metadata'] -and [bool]$property.Value.metadata.PSObject.Properties['description']) {
                 $result.Description = $property.Value.metadata.description;
